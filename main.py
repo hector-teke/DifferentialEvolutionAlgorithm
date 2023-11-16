@@ -13,6 +13,7 @@ class Individual:
     def __str__(self):
         return f"values={self.values}, quality={self.quality}, mutationCons={self.mutationCons}, crossoverProb={self.crossoverProb})"
 
+
 def create_first(bound=5.12, population=20, dimension=10):  # Returns the first population of solutions
     solutions = []
 
@@ -26,36 +27,38 @@ def create_first(bound=5.12, population=20, dimension=10):  # Returns the first 
 
     return solutions
 
+
 def select_best(function, solutions):
-    best = solutions[0]
-    quality = function(best)
+    best = None
+    max = 0.0
 
-    for i in range(1, len(solutions)):
-        aux = function(solutions[i])
+    for ind in solutions:
+        ind.quality = function(ind.values)
 
-        if aux > quality:
-            best = solutions[i]
-            quality = aux
+        if ind.quality > max:
+            max = ind.quality
+            best = ind
+
     return best
 
-def mutation(x, mutationCons):
 
+def mutation(x, mutationCons):
     return ''
+
 
 def crossover(x1, x2, crossoverProb):
-
     return ''
 
-def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
 
+def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
     # Pseudo-random generation of population
     p = create_first(bound, population, dimension)
     new_p = []
     best = select_best(function, p)  # Select best solution from population
 
-    for g in range(generations):    # At every iteration
+    for g in range(generations):  # At every iteration
 
-        for i in range(population):         # For each element in population
+        for i in range(population):  # For each element in population
             xi = p[i]
             vi = mutation(xi, mutationCons)
             ui = crossover(xi, vi, crossoverProb)
@@ -69,26 +72,17 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
             new_p = []
             best = select_best(function, p)
 
-            if function(best) == 0:     # Stops the algorithm if the best is found
+            if function(best) == 0:  # Stops the algorithm if the best is found
                 return best
 
     return best
 
 
-
-def funcion(s):
-    num = int(s, 2)
-    return num
-
-
-
+def suma(s):  # Funcion chorra
+    return sum(s)
 
 
 if __name__ == '__main__':
-
-    #print(differential_evolution(funcion))
+    # print(differential_evolution(sum))
 
     create_first(5, 5, 8)
-
-
-
