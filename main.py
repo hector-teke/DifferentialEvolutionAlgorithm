@@ -43,39 +43,44 @@ def select_best(function, solutions):
 
 
 def mutation(x, mutationCons):
-    return ''
+    ind = Individual()
+    return ind
 
 
 def crossover(x1, x2, crossoverProb):
-    return ''
+    ind = Individual()
+    return ind
 
 
 def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
     # Pseudo-random generation of population
-    p = create_first(bound, population, dimension)
-    new_p = []
-    best = select_best(function, p)  # Select best solution from population
+    solutions = create_first(bound, population, dimension)
+    new_solutions = []
+    history = []
+    best = select_best(function, solutions)  # Select best solution from population
+    history.append(best)
 
-    for g in range(generations):  # At every iteration
+    for g in range(generations):  # For every iteration
 
         for i in range(population):  # For each element in population
-            xi = p[i]
+            xi = solutions[i]
             vi = mutation(xi, mutationCons)
             ui = crossover(xi, vi, crossoverProb)
 
-            if function(ui) < function(xi):
-                new_p[i] = ui
-            else:
-                new_p[i] = xi
+            if function(ui.values) > function(xi.values):     # Maximise the quality
+                new_solutions[i] = ui
+            else:                                             # Decides which one survives
+                new_solutions[i] = xi
 
-            p = new_p
-            new_p = []
-            best = select_best(function, p)
+            solutions = new_solutions
+            new_solutions = []
+            best = select_best(function, solutions)
+            history.append(best)
 
             if function(best) == 0:  # Stops the algorithm if the best is found
                 return best
 
-    return best
+    return best, history
 
 
 def suma(s):  # Funcion chorra
