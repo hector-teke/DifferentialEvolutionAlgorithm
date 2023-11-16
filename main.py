@@ -20,10 +20,9 @@ def create_first(bound=5.12, population=20, dimension=10):  # Returns the first 
     for i in range(population):
         ind = Individual()
         for j in range(dimension):
-            ind.values.append(random.uniform(- bound, bound))
+            ind.values.append(round(random.uniform(- bound, bound), 4))
 
         solutions.append(ind)
-        print(solutions[i])
 
     return solutions
 
@@ -33,7 +32,9 @@ def select_best(function, solutions):
     max = 0.0
 
     for ind in solutions:
-        ind.quality = function(ind.values)
+
+        if ind.quality is None:  # Avoid repeating the evaluation
+            ind.quality = function(ind.values)
 
         if ind.quality > max:
             max = ind.quality
@@ -42,9 +43,26 @@ def select_best(function, solutions):
     return best
 
 
-def mutation(x, mutationCons):
-    ind = Individual()
-    return ind
+def mutation(x, solutions, mutationCons=0.5):
+    # Select 3 mutually different individuals randomly (different from the parent x)
+    r1, r2, r3 = select_3(x, solutions)
+
+    # Mutation vector calculation
+    vector = []
+    for i in range(len(x.values)):
+        vector.append(r1.values[i] + mutationCons * (r2.values[i] - r3.values[i]))
+
+    return vector
+
+
+def select_3(x, solutions):
+    aux = solutions.copy()
+
+    aux.remove(x)  # Drops x from the copy
+
+    selection = random.sample(aux, 3)  # Choose 3 different individuals
+
+    return selection
 
 
 def crossover(x1, x2, crossoverProb):
@@ -52,7 +70,8 @@ def crossover(x1, x2, crossoverProb):
     return ind
 
 
-def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
+def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3,
+                           mutationCons=0.5):
     # Pseudo-random generation of population
     solutions = create_first(bound, population, dimension)
     new_solutions = []
@@ -64,12 +83,12 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
 
         for i in range(population):  # For each element in population
             xi = solutions[i]
-            vi = mutation(xi, mutationCons)
+            vi = mutation(xi, solutions, mutationCons)
             ui = crossover(xi, vi, crossoverProb)
 
-            if function(ui.values) > function(xi.values):     # Maximise the quality
+            if function(ui.values) > function(xi.values):  # Maximise the quality
                 new_solutions[i] = ui
-            else:                                             # Decides which one survives
+            else:  # Decides which one survives
                 new_solutions[i] = xi
 
             solutions = new_solutions
@@ -83,11 +102,22 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
     return best, history
 
 
-def suma(s):  # Funcion chorra
-    return sum(s)
-
-
 if __name__ == '__main__':
     # print(differential_evolution(sum))
 
-    create_first(5, 5, 8)
+    s = create_first(5, 20, 10)
+    best = select_best(sum, s)
+
+    print(best)
+
+    print(mutation(best, s))
+
+
+
+
+
+
+
+
+
+
