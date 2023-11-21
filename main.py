@@ -43,14 +43,14 @@ def select_best(function, solutions):
     return best
 
 
-def mutation(x, solutions, mutationCons=0.5):
+def mutation(x, solutions, mutationCons=0.5):   #It returns a vector (not an individual)
     # Select 3 mutually different individuals randomly (different from the parent x)
     r1, r2, r3 = select_3(x, solutions)
 
     # Mutation vector calculation
     vector = []
     for i in range(len(x.values)):
-        vector.append(r1.values[i] + mutationCons * (r2.values[i] - r3.values[i]))
+        vector.append(round(r1.values[i] + mutationCons * (r2.values[i] - r3.values[i]), 4))
 
     return vector
 
@@ -65,9 +65,21 @@ def select_3(x, solutions):
     return selection
 
 
-def crossover(x1, x2, crossoverProb):
-    ind = Individual()
-    return ind
+def crossover(xi, vi, crossoverProb=0.3):   #xi is an individual but vi is a vector
+    ui = Individual()
+    if crossoverProb == 0:
+        ui.values = xi.values.copy()
+        pos = random.randint(0, len(vi) - 1)
+        ui.values[pos] = vi[pos]
+    else:
+        for i in range(0, len(vi)):
+            ran = random.uniform(0, 1)
+            if ran <= crossoverProb:
+                ui.values.append(vi[i])
+            else:
+                ui.values.append(xi.values[i])
+
+    return ui
 
 
 def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3,
@@ -110,8 +122,11 @@ if __name__ == '__main__':
 
     print(best)
 
-    print(mutation(best, s))
+    mut = mutation(best, s)
+    print(mut)
 
+    cross = crossover(best, mut, 0.3)
+    print(cross)
 
 
 
