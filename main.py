@@ -1,5 +1,5 @@
 import random
-
+from functions import ObjFunction
 
 # rand/1/bin        CR = 0.3; F = 0.5
 
@@ -82,8 +82,7 @@ def crossover(xi, vi, crossoverProb=0.3):   #xi is an individual but vi is a vec
     return ui
 
 
-def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3,
-                           mutationCons=0.5):
+def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
     # Pseudo-random generation of population
     solutions = create_first(bound, population, dimension)
     new_solutions = []
@@ -98,26 +97,39 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
             vi = mutation(xi, solutions, mutationCons)
             ui = crossover(xi, vi, crossoverProb)
 
+            for j in range(len(ui.values) - 0):
+                val = ui.values[j]
+                if val < -bound or val > bound:
+                    ui.values[j] = round(random.uniform(- bound, bound), 4)
+
             if function(ui.values) > function(xi.values):  # Maximise the quality
-                new_solutions[i] = ui
+                new_solutions.append(ui)
             else:  # Decides which one survives
-                new_solutions[i] = xi
+                new_solutions.append(xi)
 
-            solutions = new_solutions
-            new_solutions = []
-            best = select_best(function, solutions)
-            history.append(best)
+        solutions = new_solutions
+        new_solutions = []
+        best = select_best(function, solutions)
+        history.append(best)
 
-            if function(best) == 0:  # Stops the algorithm if the best is found
-                return best
+        if function(best.values) == 1:  # Stops the algorithm if the best is found (or it is really close)
+            print("Stopped at generation ", g)
+            return best, history
 
     return best, history
 
 
 if __name__ == '__main__':
-    # print(differential_evolution(sum))
 
-    s = create_first(5, 20, 10)
+    f = ObjFunction()
+    best, history = differential_evolution(f.schwefel, bound=500)
+    print(best)
+
+
+
+
+
+"""    s = create_first(5, 20, 10)
     best = select_best(sum, s)
 
     print(best)
@@ -126,7 +138,10 @@ if __name__ == '__main__':
     print(mut)
 
     cross = crossover(best, mut, 0.3)
-    print(cross)
+    print(cross)"""
+
+
+
 
 
 
