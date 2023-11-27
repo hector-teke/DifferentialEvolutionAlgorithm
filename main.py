@@ -14,13 +14,15 @@ class Individual:
         return f"values={self.values}, quality={self.quality}, mutationCons={self.mutationCons}, crossoverProb={self.crossoverProb})"
 
 
-def create_first(bound=5.12, population=20, dimension=10):  # Returns the first population of solutions
+def create_first(bound=5.12, population=20, dimension=10, mutationCons=0.5, crossoverProb=0.3):  # Returns the first population of solutions
     solutions = []
 
     for i in range(population):
         ind = Individual()
         for j in range(dimension):
             ind.values.append(round(random.uniform(- bound, bound), 4))
+            ind.crossoverProb = crossoverProb
+            ind.mutationCons = mutationCons
 
         solutions.append(ind)
 
@@ -43,9 +45,10 @@ def select_best(function, solutions):
     return best
 
 
-def mutation(x, solutions, mutationCons=0.5):   #It returns a vector (not an individual)
+def mutation(x, solutions):   #It returns a vector (not an individual)
     # Select 3 mutually different individuals randomly (different from the parent x)
     r1, r2, r3 = select_3(x, solutions)
+    mutationCons = x.mutationCons   # Takes the value from the individual
 
     # Mutation vector calculation
     vector = []
@@ -65,8 +68,13 @@ def select_3(x, solutions):
     return selection
 
 
-def crossover(xi, vi, crossoverProb=0.3):   #xi is an individual but vi is a vector
+def crossover(xi, vi):   #xi is an individual but vi is a vector
     ui = Individual()
+    crossoverProb = xi.crossoverProb
+
+    ui.mutationCons = xi.mutationCons
+    ui.crossoverProb = crossoverProb
+
     if crossoverProb == 0:
         ui.values = xi.values.copy()
         pos = random.randint(0, len(vi) - 1)
@@ -82,9 +90,9 @@ def crossover(xi, vi, crossoverProb=0.3):   #xi is an individual but vi is a vec
     return ui
 
 
-def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5):
+def differential_evolution(function, generations=1000, bound=5.12, population=20, dimension=10, crossoverProb=0.3, mutationCons=0.5, jDE=False):
     # Pseudo-random generation of population
-    solutions = create_first(bound, population, dimension)
+    solutions = create_first(bound, population, dimension, mutationCons, crossoverProb)
     new_solutions = []
     history = []
     best = select_best(function, solutions)  # Select best solution from population
@@ -98,8 +106,8 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
             # Adaptative variant: changes on F and CR may occur here with prob=0.1
 
 
-            vi = mutation(xi, solutions, mutationCons)
-            ui = crossover(xi, vi, crossoverProb)
+            vi = mutation(xi, solutions)
+            ui = crossover(xi, vi)
 
             # Make sure that values are in the bounds
             for j in range(len(ui.values) - 0):
@@ -133,7 +141,7 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
 if __name__ == '__main__':
 
     f = ObjFunction()
-    best, history = differential_evolution(f.schwefel, bound=500)
+    best, history = differential_evolution(f.schwefel, bound=500, jDE=False)
     print(best)
 
 
