@@ -102,9 +102,18 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
 
         for i in range(population):  # For each element in population
             xi = solutions[i]
+            old_crossoverProb = xi.crossoverProb
+            old_mutationCons = xi.mutationCons
 
             # Adaptative variant: changes on F and CR may occur here with prob=0.1
+            if jDE:
+                r1 = random.random()
+                r2 = random.random()
+                if r1 < 0.1:
+                    xi.crossoverProb = random.random() #Random value between 0 and 1
 
+                if r2 < 0.1:
+                    xi.mutationCons = random.uniform(0.1, 0.9)
 
             vi = mutation(xi, solutions)
             ui = crossover(xi, vi)
@@ -115,7 +124,8 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
                 if val < -bound or val > bound:
                     ui.values[j] = round(random.uniform(- bound, bound), 4)
 
-            if function(ui.values) > function(xi.values):  # Maximise the quality
+            # Maximise the quality
+            if function(ui.values) > function(xi.values):
 
                 # Adaptative variant: If the new individual is better, we keep the new F and CR as well
 
@@ -123,6 +133,9 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
             else:  # Decides which one survives
 
                 # Adaptative variant: If the new individual is worst, we keep the old F and CR
+                if jDE:
+                    xi.crossoverProb = old_crossoverProb
+                    xi.mutationCons = old_mutationCons
 
                 new_solutions.append(xi)
 
@@ -141,9 +154,8 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
 if __name__ == '__main__':
 
     f = ObjFunction()
-    best, history = differential_evolution(f.schwefel, bound=500, jDE=False)
+    best, history = differential_evolution(f.rastrigin, bound=5.12, jDE=False)
     print(best)
-
 
 
 
