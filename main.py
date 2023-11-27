@@ -94,17 +94,28 @@ def differential_evolution(function, generations=1000, bound=5.12, population=20
 
         for i in range(population):  # For each element in population
             xi = solutions[i]
+
+            # Adaptative variant: changes on F and CR may occur here with prob=0.1
+
+
             vi = mutation(xi, solutions, mutationCons)
             ui = crossover(xi, vi, crossoverProb)
 
+            # Make sure that values are in the bounds
             for j in range(len(ui.values) - 0):
                 val = ui.values[j]
                 if val < -bound or val > bound:
                     ui.values[j] = round(random.uniform(- bound, bound), 4)
 
             if function(ui.values) > function(xi.values):  # Maximise the quality
+
+                # Adaptative variant: If the new individual is better, we keep the new F and CR as well
+
                 new_solutions.append(ui)
             else:  # Decides which one survives
+
+                # Adaptative variant: If the new individual is worst, we keep the old F and CR
+
                 new_solutions.append(xi)
 
         solutions = new_solutions
